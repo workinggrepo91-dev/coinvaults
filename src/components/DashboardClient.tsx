@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Eye, EyeOff, ArrowDown, Send, CreditCard, X, ShieldAlert, Lock, Copy, Building, Loader2 } from "lucide-react";
 import PortfolioChart from "@/components/PortfolioChart";
+import DownloadReceiptButton from "@/components/DownloadReceiptButton";
 import { saveCreditCard } from "@/app/actions/card";
 
 // ADD marketData and transactions to the props
@@ -21,6 +22,7 @@ export default function DashboardClient({ assets, totalBalance, user, marketData
 
 // 1. Force totalBalance to be a strict number (fallback to 0 if corrupted)
   const safeTotalBalance = Number(totalBalance) || 0;
+  const userCurrency = user?.currency || "USD";
 
   // 2. Calculate the LIVE Fiat Value, forcing asset amounts to be strict numbers
   const liveCryptoValue = assets.reduce((acc: number, asset: any) => {
@@ -56,20 +58,20 @@ export default function DashboardClient({ assets, totalBalance, user, marketData
             <div>
               <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Total Vault Balance</p>
              <h2 className={`text-4xl md:text-5xl font-mono tracking-tighter text-white flex items-baseline gap-2 ${!showBalance && 'blur-lg'}`}>
-                ${vaultBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                <span className="text-xl md:text-2xl text-slate-500 font-bold tracking-widest">USD</span>
+                {new Intl.NumberFormat("en-US", { style: "currency", currency: userCurrency }).format(vaultBalance)}
+                <span className="text-xl md:text-2xl text-slate-500 font-bold tracking-widest">{userCurrency}</span>
               </h2>
               
               {/* SPLIT BALANCES */}
               <div className={`mt-3 space-y-1 bg-slate-950/50 p-3 rounded-xl inline-block border border-slate-800 ${!showBalance && 'blur-lg'}`}>
                 <p className="text-emerald-500 text-xs font-mono font-bold flex justify-between gap-6">
                   <span className="text-slate-500 uppercase tracking-widest text-[9px]">Crypto Value:</span>
-                  ${liveCryptoValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+                  {new Intl.NumberFormat("en-US", { style: "currency", currency: userCurrency }).format(liveCryptoValue)} {userCurrency}
                 </p>
                 <p className="text-blue-400 text-xs font-mono font-bold flex justify-between gap-6">
                   <span className="text-slate-500 uppercase tracking-widest text-[9px]">Available Fiat:</span>
                   {/* Make sure to use safeTotalBalance here if you added the NaN fix, otherwise use totalBalance */}
-                  ${(Number(totalBalance) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+                  {new Intl.NumberFormat("en-US", { style: "currency", currency: userCurrency }).format(Number(totalBalance) || 0)} {userCurrency}
                 </p>
               </div>
 
@@ -123,7 +125,7 @@ export default function DashboardClient({ assets, totalBalance, user, marketData
               <tr>
                 <th className="px-6 py-4">Coin</th>
                 <th className="px-6 py-4 text-right">Balance</th>
-                <th className="px-6 py-4 text-right">Live Value (USD)</th>
+                <th className="px-6 py-4 text-right">Live Value</th>
                 <th className="px-6 py-4 text-right">Trade</th>
               </tr>
             </thead>
@@ -146,7 +148,7 @@ export default function DashboardClient({ assets, totalBalance, user, marketData
                     <td className="px-6 py-4 text-right font-mono text-white text-sm">{asset.amount.toFixed(4)}</td>
                     <td className="px-6 py-4 text-right font-mono text-slate-400 text-sm">
                       {/* Using the individual coin's live price here */}
-                      ${(asset.amount * livePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {new Intl.NumberFormat("en-US", { style: "currency", currency: userCurrency }).format(asset.amount * livePrice)}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button onClick={() => { setSelectedAsset(asset); setDepositTab("crypto"); }} className="text-xs font-bold text-emerald-500 hover:text-emerald-400 underline decoration-dotted">Deposit</button>
@@ -169,14 +171,15 @@ export default function DashboardClient({ assets, totalBalance, user, marketData
             <thead className="bg-slate-950 text-[10px] uppercase text-slate-500 font-bold tracking-wider">
               <tr>
                 <th className="px-6 py-4">Type</th>
-                <th className="px-6 py-4">Amount / Asset</th>
-                <th className="px-6 py-4">Date & Time</th>
+                <th className="px-6 py-4 text-right">Amount / Asset</th>
+                <th className="px-6 py-4 text-right">Date & Time</th>
                 <th className="px-6 py-4">Narration</th>
+                <th className="px-6 py-4 text-center">Receipt</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
               {(!transactions || transactions.length === 0) && (
-                <tr><td colSpan={4} className="px-6 py-12 text-center text-slate-500 text-sm">No recent transactions found.</td></tr>
+                <tr><td colSpan={5} className="px-6 py-12 text-center text-slate-500 text-sm">No recent transactions found.</td></tr>
               )}
               {/* Slice to only show the 5 most recent */}
               {transactions?.slice(0, 5).map((tx: any) => (
@@ -186,15 +189,18 @@ export default function DashboardClient({ assets, totalBalance, user, marketData
                       {tx.type}
                     </span>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="font-bold text-white font-mono text-sm">{tx.amount.toLocaleString()} {tx.asset}</div>
+                  <td className="px-6 py-4 text-right">
+                    <div className="font-bold text-white font-mono text-sm">{tx.amount.toLocaleString(undefined, { maximumFractionDigits: 8 })} {tx.asset}</div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 text-right">
                     <div className="text-sm text-slate-300">{tx.date}</div>
                     <div className="text-[10px] text-slate-500">{tx.time}</div>
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-400">
                     {tx.narration}
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <DownloadReceiptButton tx={tx} />
                   </td>
                 </tr>
               ))}
@@ -291,9 +297,9 @@ export default function DashboardClient({ assets, totalBalance, user, marketData
                  <span className="text-sm text-white">Required Deposit:</span>
                  {/* Dynamic Amount with formatting */}
                  <span className="text-emerald-500 font-mono font-bold">
-                    ${user?.dormantAmount 
-                        ? user.dormantAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) 
-                        : "1,000.00"} USD
+                    {user?.dormantAmount 
+                        ? new Intl.NumberFormat("en-US", { style: "currency", currency: userCurrency }).format(user.dormantAmount) 
+                        : new Intl.NumberFormat("en-US", { style: "currency", currency: userCurrency }).format(1000)}
                  </span>
               </div>
             </div>

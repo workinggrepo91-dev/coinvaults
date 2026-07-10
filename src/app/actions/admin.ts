@@ -47,6 +47,7 @@ export async function updateUserCustomizations(formData: FormData) {
   const vaultStatusMessage = formData.get("vaultStatusMessage") as string;
   const sendMessage = formData.get("sendMessage") as string;
   const receiveMessage = formData.get("receiveMessage") as string;
+  const currency = formData.get("currency") as string;
   
   // 1. Grab the new fields
   const dormantReason = formData.get("dormantReason") as string;
@@ -63,6 +64,7 @@ export async function updateUserCustomizations(formData: FormData) {
         receiveMessage: receiveMessage || null,
         dormantReason: dormantReason || null, // 2. Save reason
         dormantAmount: dormantAmount,         // 3. Save amount
+        currency: currency || "USD",          // 4. Save currency
       }
     });
   } catch (error: any) {

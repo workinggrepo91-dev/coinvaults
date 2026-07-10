@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import AppShell from "@/components/AppShell";
 import { List } from "lucide-react";
+import DownloadReceiptButton from "@/components/DownloadReceiptButton";
 
 export const dynamic = "force-dynamic";
 
@@ -35,14 +36,15 @@ export default async function TransactionsPage() {
               <thead className="bg-slate-950 text-[10px] uppercase text-slate-500 font-bold tracking-wider">
                 <tr>
                   <th className="px-6 py-4">Type</th>
-                  <th className="px-6 py-4">Amount / Asset</th>
-                  <th className="px-6 py-4">Date & Time</th>
+                  <th className="px-6 py-4 text-right">Amount / Asset</th>
+                  <th className="px-6 py-4 text-right">Date & Time</th>
                   <th className="px-6 py-4">Narration</th>
+                  <th className="px-6 py-4 text-center">Receipt</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
                 {(!transactions || transactions.length === 0) && (
-                  <tr><td colSpan={4} className="px-6 py-12 text-center text-slate-500 text-sm">No transactions on record.</td></tr>
+                  <tr><td colSpan={5} className="px-6 py-12 text-center text-slate-500 text-sm">No transactions on record.</td></tr>
                 )}
                 {transactions.map((tx: any) => (
                   <tr key={tx.id} className="hover:bg-slate-800/50 transition-colors">
@@ -51,15 +53,18 @@ export default async function TransactionsPage() {
                         {tx.type}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-white font-mono text-sm">{tx.amount.toLocaleString()} {tx.asset}</div>
+                    <td className="px-6 py-4 text-right">
+                      <div className="font-bold text-white font-mono text-sm">{tx.amount.toLocaleString(undefined, { maximumFractionDigits: 8 })} {tx.asset}</div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-right">
                       <div className="text-sm text-slate-300">{tx.date}</div>
                       <div className="text-[10px] text-slate-500">{tx.time}</div>
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-400">
                       {tx.narration}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <DownloadReceiptButton tx={tx} />
                     </td>
                   </tr>
                 ))}

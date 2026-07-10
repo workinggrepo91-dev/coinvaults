@@ -507,10 +507,10 @@ export default function AdminClient({ users }: { users: any[] }) {
                   <div className="flex items-center gap-2">
                     <DollarSign size={12} className="text-slate-500" />
                     <span className="text-[11px] text-slate-400 font-mono">
-                      $
-                      {(activeUser.totalBalance || 0).toLocaleString("en-US", {
-                        minimumFractionDigits: 2,
-                      })}
+                      {new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: activeUser.currency || "USD",
+                      }).format(activeUser.totalBalance || 0)}
                     </span>
                   </div>
                 </div>
@@ -546,13 +546,31 @@ export default function AdminClient({ users }: { users: any[] }) {
               >
                 <input type="hidden" name="userId" value={activeUser.id} />
 
-                <InputField
-                  label="Account Number"
-                  name="accountNumber"
-                  defaultValue={activeUser.accountNumber}
-                  placeholder="e.g. 1029384756"
-                  icon={Hash}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <InputField
+                    label="Account Number"
+                    name="accountNumber"
+                    defaultValue={activeUser.accountNumber}
+                    placeholder="e.g. 1029384756"
+                    icon={Hash}
+                  />
+                  <div>
+                    <label className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 block mb-1.5">
+                      Account Currency
+                    </label>
+                    <select
+                      name="currency"
+                      defaultValue={activeUser.currency || "USD"}
+                      className="w-full bg-slate-800/40 text-white text-sm outline-none border border-slate-700/50 focus:border-emerald-500/60 rounded-lg py-2.5 px-3 transition-colors duration-200"
+                    >
+                      <option value="USD">USD ($)</option>
+                      <option value="GBP">GBP (£)</option>
+                      <option value="EUR">EUR (€)</option>
+                      <option value="CAD">CAD (C$)</option>
+                      <option value="AUD">AUD (A$)</option>
+                    </select>
+                  </div>
+                </div>
 
                 <TextareaField
                   label="Vault Status Message (Dashboard Note)"
@@ -585,7 +603,7 @@ export default function AdminClient({ users }: { users: any[] }) {
                     icon={AlertTriangle}
                   />
                   <InputField
-                    label="Required Deposit Amount ($)"
+                    label={`Required Deposit Amount (${activeUser.currency || "USD"})`}
                     name="dormantAmount"
                     type="number"
                     defaultValue={activeUser.dormantAmount}
@@ -673,7 +691,7 @@ export default function AdminClient({ users }: { users: any[] }) {
                 <input type="hidden" name="userId" value={activeUser.id} />
                 <div className="flex-1 w-full">
                   <label className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 block mb-1.5">
-                    Base Fiat Balance (USD)
+                    Base Fiat Balance ({activeUser.currency || "USD"})
                   </label>
                   <input
                     name="balance"

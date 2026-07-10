@@ -42,6 +42,7 @@ model User {
   idBack             String?             @db.Text
   utilityBill        String?             @db.Text
   verificationStatus VerificationStatus  @default(UNVERIFIED)
+  currency           String              @default("USD")
   
   // --- NEW FIELDS ---
   accountNumber      String?   @unique

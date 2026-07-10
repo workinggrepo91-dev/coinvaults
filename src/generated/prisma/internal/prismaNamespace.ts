@@ -759,6 +759,7 @@ export const UserScalarFieldEnum = {
   idBack: 'idBack',
   utilityBill: 'utilityBill',
   verificationStatus: 'verificationStatus',
+  currency: 'currency',
   accountNumber: 'accountNumber',
   vaultStatusMessage: 'vaultStatusMessage',
   sendMessage: 'sendMessage',
