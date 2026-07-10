@@ -2,7 +2,7 @@ import type { NextAuthConfig } from "next-auth";
 
 export const authConfig = {
   trustHost: true,
-  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "fallback-secret-key-that-is-at-least-32-chars-long",
   pages: {
     signIn: "/login",
   },
